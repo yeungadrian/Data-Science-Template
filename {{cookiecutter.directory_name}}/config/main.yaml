@@ -1,0 +1,19 @@
+defaults:
+  - _self_
+
+raw: 
+  path: data/raw/sample.csv
+
+processed:
+  dir: data/processed
+  name: processed.csv
+  path: ${processed.dir}/${processed.name}
+
+final:
+  dir: data/final
+  name: final.csv
+  path: ${final.dir}/${final.name}
+
+mlflow:
+  tracking_uri: http://localhost:5001
+  experiment_id: 0
