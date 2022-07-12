@@ -91,5 +91,5 @@ target/
 .pytest_cache/
 
 # Hydra logs
-./outputs
+*./outputs
 /outputs

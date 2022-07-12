@@ -15,6 +15,7 @@ def train_model(config: DictConfig):
 
     iris_dataset = load_iris()
 
+    mlflow.set_registry_uri(config.mlflow.registry_uri)
     mlflow.set_tracking_uri(config.mlflow.tracking_uri)
     mlflow.start_run(run_name="iris_data", experiment_id=config.mlflow.experiment_id)
 
