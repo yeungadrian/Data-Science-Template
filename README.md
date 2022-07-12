@@ -16,21 +16,19 @@ Heavily inspired by: https://github.com/khuyentran1401/data-science-template/blo
 .
 ├── config                      
 │   ├── main.yaml                   # Main configuration file
-├── .flake8                         # configuration for flake8 - a Python formatter tool
-├── .gitignore                      # ignore files that cannot commit to Git
-├── Makefile                        # store useful commands to set up the environment
 ├── notebooks                       # store notebooks
-├── .pre-commit-config.yaml         # configurations for pre-commit
-├── pyproject.toml                  # dependencies for poetry
-├── README.md                       # describe your project
 ├── src                             # store source code
 │   ├── __init__.py                 # make src a Python module 
-│   ├── process.py                  # process data before training model
 │   └── train_model.py              # train model
-└── tests                           # store tests
-    ├── __init__.py                 # make tests a Python module 
-    ├── test_process.py             # test functions for process.py
-    └── test_train_model.py         # test functions for train_model.py
+├── tests                           # store tests
+│   ├── __init__.py                 # make tests a Python module 
+│   └── test_train_model.py         # test functions for train_model.py
+├── .flake8                         # configuration for flake8 - a Python formatter tool
+├── .gitignore                      # ignore files that cannot commit to Git
+├── .pre-commit-config.yaml         # configurations for pre-commit
+├── Makefile                        # store useful commands to set up the environment
+├── pyproject.toml                  # dependencies for poetry
+└── README.md                       # describe your project
 ```
 
 ## Set up the environment
@@ -47,7 +45,6 @@ poetry add <package-name>
 ```
 
 # Generate docss
-
 ```
 make docs
 ```
