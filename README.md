@@ -31,6 +31,16 @@ Heavily inspired by: https://github.com/khuyentran1401/data-science-template/blo
 └── README.md                       # describe your project
 ```
 
+## How to use:
+Install Cookiecutter:
+```
+pip install cookiecutter
+```
+Create a project based on the template:
+```
+cookiecutter https://github.com/yeungadrian/DSProjectTemplate.git
+```
+
 ## Set up the environment
 1. Install [Poetry](https://python-poetry.org/docs/#installation)
 2. Set up the environment:
