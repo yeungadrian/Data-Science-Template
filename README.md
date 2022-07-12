@@ -2,6 +2,16 @@
 
 Heavily inspired by: https://github.com/khuyentran1401/data-science-template/blob/master/README.md
 
+## How to use:
+Install Cookiecutter:
+```
+pip install cookiecutter
+```
+Create a project based on the template:
+```
+cookiecutter https://github.com/yeungadrian/DSProjectTemplate.git
+```
+
 ## Tools used in this project
 * [Poetry](https://python-poetry.org/docs/basic-usage/): Dependency management
 * [hydra](https://hydra.cc/): Manage configuration 
@@ -29,32 +39,4 @@ Heavily inspired by: https://github.com/khuyentran1401/data-science-template/blo
 ├── Makefile                        # store useful commands to set up the environment
 ├── pyproject.toml                  # dependencies for poetry
 └── README.md                       # describe your project
-```
-
-## How to use:
-Install Cookiecutter:
-```
-pip install cookiecutter
-```
-Create a project based on the template:
-```
-cookiecutter https://github.com/yeungadrian/DSProjectTemplate.git
-```
-
-## Set up the environment
-1. Install [Poetry](https://python-poetry.org/docs/#installation)
-2. Set up the environment:
-```
-make activate
-make setup
-```
-
-## Install new packages
-```
-poetry add <package-name>
-```
-
-# Generate docss
-```
-make docs
 ```
