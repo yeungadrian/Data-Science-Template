@@ -2,17 +2,16 @@ import itertools
 import logging
 from typing import Any, List, Tuple
 
+import hydra
 import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
-import sklearn
-from sklearn import metrics
 from dotenv import load_dotenv
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.exceptions import MlflowException
-from mlflow.tracking import MlflowClient
+from .helpers import MLFlowUtils
 from mlflow.models.signature import ModelSignature
-from mlflow.types.schema import Schema, ColSpec
+from mlflow.types.schema import ColSpec, Schema
+from omegaconf import DictConfig, OmegaConf
+from sklearn import metrics
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
@@ -23,82 +22,15 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %I:%M:%S%p",
 )
 
-config = {
-    # Paths, hyperparameters, environments,
-    "experiment_name": "Default",
-    "tags": {
-        "calibration_date": "2021-12-31",
-    },
-    "model_path": "sklearn_classifier",
-    "test_size": 0.25,
-    "random_state": 0,
-    "bacc_threshold": 0.5,
-    "model_registry_name": "iris_classifer",
-}
-
-# Improvements: Functions should be moved to within a class within modules
+mlflowutils = MLFlowUtils()
 
 
-def create_experiment(
-    mlflow_client: mlflow.MlflowClient, experiment_name: str
-) -> str:
-    """
-    Creates experiment in MLFlow if it doesn't exist
-
-    Args:
-        mlflow_client mlflow.MlflowClient(): mlflow client
-        experiment_name (str): Experiennt Name
-
-    Returns:
-        str: Experiment ID
-
-    """
-    try:
-        experiment_id = mlflow_client.create_experiment(experiment_name)
-        logging.info(
-            f"Experiment {experiment_name} created with id {experiment_id}"
-        )
-    except MlflowException as error:
-        experiment = mlflow_client.get_experiment_by_name(experiment_name)
-        if experiment.lifecycle_stage == LifecycleStage.DELETED:
-            logging.error(f"Experiment {experiment_name} already DELETED")
-            raise
-        experiment_id = experiment.experiment_id
-        logging.info(
-            f"Experiment {experiment_name} exists with id {experiment_id}"
-        )
-    return experiment_id
-
-
-def start_mlflow_run(
-    experiment_name: str, run_name: str = None
-) -> mlflow.ActiveRun:
-    """
-    Start an mlflow run under specified experiment.
-    Will generate experiment if it doesn't exist.
-
-    Args:
-        experiment_name (str): Experiment name in MLFlow
-        run_name (str=None): Optional run name
-
-    Returns:
-        mlflow.ActiveRun
-
-    """
-    mlflow_client = MlflowClient()
-    experiment_id = create_experiment(mlflow_client, experiment_name)
-    run = mlflow.start_run(
-        experiment_id=experiment_id, run_name=run_name, tags=config["tags"]
-    )
-    return run
-
-
-def load_data() -> sklearn.utils._bunch.Bunch:
+def load_data() -> Any:
     """
     Load iris dataset
 
     Returns:
-        sklearn.utils._bunch.Bunch
+        Any
 
     """
     iris_dataset = load_iris()
@@ -106,7 +38,7 @@ def load_data() -> sklearn.utils._bunch.Bunch:
 
 
 def process_data(
-    iris_dataset: sklearn.utils._bunch.Bunch,
+    iris_dataset: Any,
     test_size: float,
     random_state: int,
 ) -> Tuple[np.ndarray, ...]:
@@ -114,7 +46,9 @@ def process_data(
     Generate test train split
 
     Args:
-        iris_dataset (sklearn.utils._bunch.Bunch): iris dataset
+        iris_dataset (sklearn.utils._bunch.Bunch): Iris dataset
+        test_size (float): Percentage of dataset to use as test set
+        random_state (int): Random state to use for splits
 
     Returns:
         Tuple[np.ndarray, ...]: (X_train, X_test, y_train, y_test)
@@ -149,18 +83,16 @@ def train_model(X_train: np.ndarray, y_train: np.ndarray) -> Any:
 def log_model(
     model: Any,
     model_path: str,
-) -> mlflow.models.model.ModelInfo:
+) -> Tuple[str, str]:
     """
     Log model params, model and model signature (inputs / outputs) to mlflow
 
     Args:
         model (Any): Sklearn Decision tree model
-        X_train (np.ndarray): X_train
-        y_train (np.ndarray): y_train
         model_path (str): Artifact path in mlflow
 
     Returns:
-        None
+        Tuple of model_uri and run_id
 
     """
     input_schema = Schema(
@@ -241,7 +173,7 @@ def plot_confusion_matrix(
 
 def log_model_validation(
     model: Any, X_test: np.ndarray, y_test: np.ndarray
-) -> None:
+) -> float:
     """
     Log model validation metrics to mlflow
     - Training curves
@@ -255,7 +187,7 @@ def log_model_validation(
         y_test (np.ndarray): y_test
 
     Returns:
-        None
+        float: balanced accuracy score
 
     """
     y_pred = get_preds(model, X_test)
@@ -267,101 +199,32 @@ def log_model_validation(
     return bacc_score
 
 
-def register_model_name(
-    mlflow_client: mlflow.MlflowClient,
-    model_name: str,
-    description: str = None,
-) -> None:
-    """
-    Create new registered model if it doesn't exist
-
-    Args:
-        mlflow_client (mlflow.MlflowClient): mlflow client
-        model_name (str): Name of registered model
-        description (str=None): Model description
-
-    Returns:
-        None
-
-    """
-    try:
-        mlflow_client.create_registered_model(model_name, description)
-        logging.info(f"Registered model {model_name} created")
-    except MlflowException as create_error:
-        logging.info(f"Registered model {model_name} already exists")
-
-    return None
-
-
-def register_model(ba_score: float, model_uri: str, run_id: str) -> Any:
-    """
-    Register model from experiment run as new version
-
-    Args:
-        ba_score (float): balanced accuracy score
-        model_uri (str): model uri of experiment run
-        run_id (str): experiment run id that generated model
-
-    Returns:
-        Any: registered model version as str or nothing
-
-    """
-    if ba_score > config["bacc_threshold"]:
-        logging.info(
-            f"Model being registered. Balanced accuracy score: {ba_score}"
-        )
-        mlflow_client = MlflowClient()
-        register_model_name(mlflow_client, config["model_registry_name"])
-        result = mlflow_client.create_model_version(
-            config["model_registry_name"],
-            model_uri,
-            run_id=run_id,
-            tags=config["tags"],
-        )
-        return result.version
-    else:
-        logging.info(
-            f"Model was not registered. Balanced accuracy score: {ba_score}"
-        )
-        return None
-
-
-def promote_model(model_version: str) -> None:
-    """
-    Promote model to "production" stage on MLFlow
-
-    Args:
-        model_version (str): model version to promote
-
-    Returns:
-        None
-
-    """
-    mlflow_client = MlflowClient()
-    mlflow_client.transition_model_version_stage(
-        name=config["model_registry_name"],
-        version=model_version,
-        stage="Production",
-        archive_existing_versions=True,
-    )
-    return None
-
-
-def main(config) -> None:
+@hydra.main(config_path="../config", config_name="main")
+def main(config: DictConfig) -> None:
     load_dotenv()
-    start_mlflow_run(config["experiment_name"])
+    tags = OmegaConf.to_container(config.mlflow.tags)
+    mlflowutils.start_mlflow_run(config.mlflow.experiment_name, tags=tags)
     iris_dataset = load_data()
     X_train, X_test, y_train, y_test = process_data(
-        iris_dataset, config["test_size"], config["random_state"]
+        iris_dataset, config.mlflow.test_size, config.mlflow.random_state
     )
     model = train_model(X_train, y_train)
-    model_uri, run_id = log_model(model, config["model_path"])
+    model_uri, run_id = log_model(model, config.mlflow.model_file_path)
     bacc_score = log_model_validation(model, X_test, y_test)
     mlflow.end_run()
-    model_version = register_model(bacc_score, model_uri, run_id)
+    model_version = mlflowutils.register_model(
+        bacc_score,
+        model_uri,
+        run_id,
+        config.mlflow.threshold,
+        config.mlflow.model_registry_name,
+        tags,
+    )
     if model_version is not None:
-        promote_model(model_version)
+        mlflowutils.promote_model(
+            model_version, config.mlflow.model_registry_name
+        )
 
 
 if __name__ == "__main__":
-    main(config)
+    main()

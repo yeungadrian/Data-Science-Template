@@ -2,6 +2,12 @@ defaults:
   - _self_
 
 mlflow:
-  tracking_uri: http://localhost:5001
-  registry_uri: http://localhost:9000
   experiment_id: 0
+  experiment_name: Default
+  model_file_path: sklearn_classifier
+  test_size: 0.25
+  random_state: 0
+  threshold: 0.5
+  model_registry_name: iris_classifer
+  tags:
+    calibration_date: 2021-12-31
