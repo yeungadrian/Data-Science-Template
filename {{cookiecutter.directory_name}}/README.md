@@ -1,7 +1,5 @@
 # {{cookiecutter.directory_name}}
 
-Heavily inspired by: https://github.com/khuyentran1401/data-science-template/blob/master/README.md
-
 ## Tools used in this project
 * [Poetry](https://python-poetry.org/docs/basic-usage/): Dependency management
 * [hydra](https://hydra.cc/): Manage configuration 
