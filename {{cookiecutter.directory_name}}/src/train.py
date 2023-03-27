@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 from dotenv import load_dotenv
-from .helpers import MLFlowUtils
 from mlflow.models.signature import ModelSignature
 from mlflow.types.schema import ColSpec, Schema
 from omegaconf import DictConfig, OmegaConf
@@ -16,13 +15,15 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
+from helpers import MLflowUtils
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s:%(levelname)s:%(message)s",
     datefmt="%Y-%m-%d %I:%M:%S%p",
 )
 
-mlflowutils = MLFlowUtils()
+mlflowutils = MLflowUtils()
 
 
 def load_data() -> Any:
@@ -171,9 +172,7 @@ def plot_confusion_matrix(
     return fig
 
 
-def log_model_validation(
-    model: Any, X_test: np.ndarray, y_test: np.ndarray
-) -> float:
+def log_model_validation(model: Any, X_test: np.ndarray, y_test: np.ndarray) -> None:
     """
     Log model validation metrics to mlflow
     - Training curves
@@ -186,8 +185,6 @@ def log_model_validation(
         X_test (np.ndarray): X_test
         y_test (np.ndarray): y_test
 
-    Returns:
-        float: balanced accuracy score
 
     """
     y_pred = get_preds(model, X_test)
@@ -196,7 +193,7 @@ def log_model_validation(
     cm = metrics.confusion_matrix(y_test, y_pred)
     cm_png = plot_confusion_matrix(cm, classes=list(np.unique(y_test)))
     mlflow.log_figure(cm_png, "confusionmatrix.png")
-    return bacc_score
+    return None
 
 
 @hydra.main(config_path="../config", config_name="main")
@@ -205,25 +202,19 @@ def main(config: DictConfig) -> None:
     tags = OmegaConf.to_container(config.mlflow.tags)
     mlflowutils.start_mlflow_run(config.mlflow.experiment_name, tags=tags)
     iris_dataset = load_data()
-    X_train, X_test, y_train, y_test = process_data(
-        iris_dataset, config.mlflow.test_size, config.mlflow.random_state
-    )
+    X_train, X_test, y_train, y_test = process_data(iris_dataset, config.mlflow.test_size, config.mlflow.random_state)
     model = train_model(X_train, y_train)
     model_uri, run_id = log_model(model, config.mlflow.model_file_path)
-    bacc_score = log_model_validation(model, X_test, y_test)
+    log_model_validation(model, X_test, y_test)
     mlflow.end_run()
     model_version = mlflowutils.register_model(
-        bacc_score,
         model_uri,
         run_id,
-        config.mlflow.threshold,
         config.mlflow.model_registry_name,
         tags,
     )
     if model_version is not None:
-        mlflowutils.promote_model(
-            model_version, config.mlflow.model_registry_name
-        )
+        mlflowutils.promote_model(model_version, config.mlflow.model_registry_name)
 
 
 if __name__ == "__main__":

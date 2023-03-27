@@ -14,7 +14,7 @@ cookiecutter https://github.com/yeungadrian/DSProjectTemplate.git
 
 ## Tools used in this project
 * [Poetry](https://python-poetry.org/docs/basic-usage/): Dependency management
-* [hydra](https://hydra.cc/): Manage configuration 
+* [hydra](https://hydra.cc/): Manage configuration
 * [pre-commit plugins](https://pre-commit.com/): Automate code reviewing formatting
 * [pdoc](https://github.com/pdoc3/pdoc): Automatic documentation
 * [pytest](https://docs.pytest.org/en/latest/): Write small, readable tests
@@ -26,15 +26,15 @@ cookiecutter https://github.com/yeungadrian/DSProjectTemplate.git
 ## Project structure
 ```
 .
-├── config                      
+├── config
 │   ├── main.yaml                   # Main configuration file
 ├── notebooks                       # store notebooks
 ├── src                             # store source code
-│   ├── __init__.py                 # make src a Python module 
+│   ├── __init__.py                 # make src a Python module
 │   └── helpers.py                  # utility functions
 │   └── train.py                    # train model
 ├── tests                           # store tests
-│   ├── __init__.py                 # make tests a Python module 
+│   ├── __init__.py                 # make tests a Python module
 │   └── test_train_model.py         # test functions for train.py
 ├── .flake8                         # configuration for flake8 - a Python formatter tool
 ├── .gitignore                      # ignore files that cannot commit to Git
