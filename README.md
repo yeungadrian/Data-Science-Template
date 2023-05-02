@@ -1,4 +1,9 @@
-# Data Science Repo Template
+#  Data-Science-Template
+
+Simple cookiecutter template to allow data scientists to not worry about:
+1. Repo folder structure
+2. Code standards / style
+3. Configuration management
 
 ## How to use:
 Install Cookiecutter:
