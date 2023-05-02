@@ -12,7 +12,7 @@ pip install cookiecutter
 ```
 Create a project based on the template:
 ```
-cookiecutter https://github.com/yeungadrian/DSProjectTemplate.git
+cookiecutter https://github.com/yeungadrian/Data-Science-Template
 ```
 
 ## Tools used in this project
