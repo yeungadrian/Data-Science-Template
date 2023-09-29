@@ -1,0 +1,35 @@
+name: Integration tests
+
+on: [push]
+
+env:
+  working-directory: ./
+
+jobs:
+  Pytest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.9.13
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9.13
+    - name: Upgrade pip
+      run: pip install --upgrade pip
+    - name: Install Pytest
+      run: pip install -r requirements.txt
+    - name: Install pre-commit
+      run: |
+        pip install pre-commit
+    - name: Run pre-commit
+      run: |
+        pre-commit run --show-diff-on-failure --color=always --all-files
+    - name: Run pytests
+      run: pytest -p no:cacheprovider
+      working-directory: ${{env.working-directory}}
+    - name: Generate coverage report
+      run: pytest --cov=./ --cov-report=xml
+      working-directory: ${{env.working-directory}}
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3

@@ -35,9 +35,10 @@ cookiecutter https://github.com/yeungadrian/Data-Science-Template
 ├── notebooks                   # store notebooks
 ├── src                         # store source code
 │   ├── __init__.py             # make src a Python module
-│   ├── data_ingestion          # data ingestion pipeline & classes
-│   ├── feature_engineering     # feature engineering pipeline & classes
-│   └── modelling               # modelling pipeline & classes
+│   ├── data                    # data ingestion pipeline & classes
+│   ├── features                # feature engineering pipeline & classes
+│   ├── models                  # modelling pipeline & classes
+│   └── reports                 # Visualisations & reports
 ├── tests                       # store tests
 │   └── __init__.py             # make tests a Python module
 ├── .gitignore                  # ignore files that cannot commit to Git
@@ -47,3 +48,8 @@ cookiecutter https://github.com/yeungadrian/Data-Science-Template
 ├── README.md                   # describe your project
 └── setup.cfg                   # flake8 config
 ```
+
+# Requirements:
+- Experiment tracker
+- Model registry
+- Github actions -> does what?

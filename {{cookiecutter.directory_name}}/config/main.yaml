@@ -1,6 +1,19 @@
 defaults:
   - _self_
 
+model:
+  target: MedHouseVal
+  cont_names:
+  - MedInc
+  - HouseAge
+  - AveRooms
+  - AveBedrms
+  - Population
+  - AveOccup
+  - Latitude
+  - Longitude
+
+
 mlflow:
   experiment_id: 0
   experiment_name: Default
